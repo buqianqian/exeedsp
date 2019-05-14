@@ -9,21 +9,21 @@
         </el-breadcrumb>
       </el-col>
     </el-row>
-        <div style="padding: 20px; width:500px">
+    <div style="padding: 20px; width:500px">
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
-        <el-form-item label="文章标题" prop="title">
-          <el-input v-model="ruleForm.title"></el-input>
+        <el-form-item label="文章标题" prop="article_title">
+          <el-input v-model="ruleForm.article_title"></el-input>
         </el-form-item>
-        <el-form-item label="门店品类" prop="category">
-          <el-radio-group v-model="ruleForm.category">
+        <el-form-item label="门店品类" prop="article_category">
+          <el-radio-group v-model="ruleForm.article_category">
             <el-radio label="Say YES合集"></el-radio>
             <el-radio label="新闻中心"></el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="文章链接" prop="link">
-          <el-input v-model="ruleForm.link"></el-input>
+        <el-form-item label="文章链接" prop="article_curl">
+          <el-input v-model="ruleForm.article_curl"></el-input>
         </el-form-item>
-        <el-form-item label="文章标题" prop="image">
+        <el-form-item label="封面图" prop="article_img">
           <el-upload
             class="upload-demo"
             action="https://jsonplaceholder.typicode.com/posts/"
@@ -37,7 +37,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitForm('ruleForm')">确认发布</el-button>
-          <el-button @click="resetForm('ruleForm')">取消</el-button>
+          <el-button @click="cancel">取消</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -49,8 +49,8 @@ export default {
   data () {
     return {
       fileList: [{
-        name: 'food.jpeg',
-        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'}, {name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+        name: '',
+        url: ''
       }],
       ruleForm: {
         title: '',
@@ -86,8 +86,8 @@ export default {
         }
       })
     },
-    resetForm (formName) {
-      this.$refs[formName].resetFields()
+    cancel () {
+      this.$router.push('./home')
     },
     handleRemove (file, fileList) {
       console.log(file, fileList)
@@ -99,6 +99,8 @@ export default {
   created () {
     this.ruleForm = this.$route.query
     console.log(this.$route.query)
+    this.fileList[0].name = this.$route.query.article_img
+    this.fileList[0].url = this.$route.query.article_img
   }
 }
 </script>

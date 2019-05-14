@@ -34,27 +34,30 @@
         style="width: 100%;margin-top: 20px">
         <el-table-column
           label="ID"
-          prop="id">
+          prop="article_id">
         </el-table-column>
         <el-table-column
           label="类别"
-          prop="category">
+          prop="article_category">
         </el-table-column>
         <el-table-column
           label="文章标题"
-          prop="title">
+          prop="article_title">
         </el-table-column>
         <el-table-column
           label="封面图"
-          prop="image">
+          prop="article_img">
+          <template slot-scope="scope">
+            <img :src="scope.row.article_img" alt="" style="width: 120px;">
+          </template>
         </el-table-column>
         <el-table-column
           label="文章链接"
-          prop="link">
+          prop="article_curl">
         </el-table-column>
         <el-table-column
           label="发布时间"
-          prop="date">
+          prop="article_time">
         </el-table-column>
         <el-table-column
           align="center"
@@ -77,6 +80,17 @@
         </el-table-column>
       </el-table>
     </div>
+    <div class="block" style="margin-top: 50px;float: right;margin-right: 30px">
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page="currentPage"
+        :page-sizes="[3]"
+        :page-size="100"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total">
+      </el-pagination>
+    </div>
   </div>
 </template>
 
@@ -86,23 +100,10 @@ export default {
     return {
       pickDate: '',
       keyWord: '',
-      tableData: [{
-        id: 1,
-        category: 'Say YES合集',
-        title: '111',
-        image: '2121',
-        link: 'www.baidu.com',
-        date: '2016-05-02'
-      },
-      {
-        id: 2,
-        category: 'Say YES合集',
-        title: '222',
-        image: '1112',
-        link: 'www.baidu.com',
-        date: '2019-05-03'
-      }],
-      search: ''
+      currentPage: 1,
+      tableData: [],
+      search: '',
+      total: 0
     }
   },
   methods: {
@@ -110,21 +111,77 @@ export default {
       this.$router.push('./new')
     },
     handleEdit (index, row) {
-      // console.log(index, row)
       this.$router.push({path: '/edit', query: row})
     },
     handleDelete (index, row) {
-      console.log(index, row)
+      this.$http.post('/del', {
+        id: row.article_id
+      }).then((res) => {
+        console.log(res)
+        if (res.data.status === 1) {
+          console.log('删除成功')
+          this.getList()
+        } else if (res.data.status === 2) {
+          console.log('操作失败')
+        }
+      })
     },
-    searchTitle () {
+    async searchTitle () {
       console.log('搜索', this.keyWord)
+      let data = `keyword=${this.keyWord}&page=1`
+      const res = await this.$http.post('/search', data)
+      const meta = res.data
+      console.log(meta)
+      if (meta.status === 1) {
+        this.tableData = meta.data
+        this.total = meta.data.length
+        console.log(this.tableData)
+      }
+      // if (meta.status ===)
+      // .then(function (res) {
+      //   console.log(res)
+      //   // console.log(res.data.data)
+      //   if (res.status === 200) {
+      //     console.log('true')
+      //     this.tableData = res.data.data
+      //     console.log(this.tableData)
+      //   }
+      // })
+      // if (res.status === 200) {
+      //   console.log('true')
+      //   this.tableData = res.data.data
+      //   console.log(this.tableData)
+      // }
     },
     dateChange () {
       console.log('dateChange', this.pickDate)
       this.tableData = this.tableData.filter((val) => {
         return val.date === this.pickDate
       })
+      this.keyWord = ''
+    },
+    handleSizeChange (val) {
+      console.log(`每页 ${val} 条`)
+    },
+    async handleCurrentChange (val) {
+      const res = await this.$http.post('/search', {
+        page: val
+      })
+      const meta = res
+      this.total = meta.data.count
+      this.tableData = meta.data.data
+      console.log(meta.data)
+    },
+    async getList () {
+      const res = await this.$http.post('/search')
+      const meta = res
+      this.total = meta.data.count
+      this.tableData = meta.data.data
+      console.log(meta.data)
     }
+  },
+  created () {
+    this.getList()
   }
 }
 </script>
