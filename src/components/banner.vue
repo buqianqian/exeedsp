@@ -25,7 +25,7 @@
           </el-upload>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm('ruleForm')">确认发布</el-button>
+          <el-button type="primary" @click="submitForm()">确认发布</el-button>
           <el-button @click="cancel">取消</el-button>
         </el-form-item>
       </el-form>
@@ -42,6 +42,7 @@
 export default {
   data () {
     return {
+      imgurl: '',
       fileList: [{
         name: 'food.jpeg',
         url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
@@ -55,15 +56,20 @@ export default {
     }
   },
   methods: {
-    submitForm (formName) {
-      this.$refs[formName].validate((valid) => {
-        if (valid) {
-          alert('submit!')
-        } else {
-          console.log('error submit!!')
-          return false
-        }
+    submitForm () {
+      this.$http.post('/uploadFile',
+        'file = ' + this.imgurl
+      ).then((res) => {
+        console.log(res)
       })
+      // this.$refs[formName].validate((valid) => {
+      //   if (valid) {
+      //     alert('submit!')
+      //   } else {
+      //     console.log('error submit!!')
+      //     return false
+      //   }
+      // })
     },
     cancel () {
       this.$router.push('./home')
@@ -75,6 +81,7 @@ export default {
       console.log('ss', file)
     },
     change (file) {
+      console.log(file)
       function getImageBlob (url, cb) {
         const xhr = new XMLHttpRequest()
         xhr.open('get', url, true)
@@ -92,7 +99,9 @@ export default {
           reader.readAsDataURL(blob)
         })
         reader.onload = e => {
+          this.imgurl = e.target.result
           console.log(e.target.result) // base64
+          console.log('this.imgurl', this.imgurl)
         }
       } else {
         alert('文件太大')
