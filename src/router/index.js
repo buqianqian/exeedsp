@@ -9,12 +9,12 @@ import Main from '../components/Main.vue'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
-      name: Home,
-      component: Home
+      name: Login,
+      component: Login
     },
     {
       path: '/login',
@@ -50,3 +50,15 @@ export default new Router({
     }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  let token = localStorage.getItem('token')
+  if (to.path === '/login' || token) {
+    // 有token，放行
+    next()
+  } else {
+    next('/login')
+  }
+})
+
+export default router

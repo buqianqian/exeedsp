@@ -25,6 +25,15 @@
 <script>
 export default {
   data () {
+    var verifycode = (rule, value, callback) => {
+      if (value.length !== 5) {
+        callback(new Error('验证码错误'))
+      } else if (value.length === 5) {
+        this.verifycode()
+        callback()
+      }
+      // callback()
+    }
     return {
       form: {
         username: '',
@@ -32,16 +41,15 @@ export default {
       },
       rules: {
         username: [
-          { required: true, message: '请输入用户名', trigger: 'change' },
+          { message: '请输入用户名', trigger: 'change' },
           { min: 3, max: 6, message: '长度在 3 到 6 个字符', trigger: 'change' }
         ],
         password: [
-          { required: true, message: '请输入密码', trigger: 'change' },
+          { message: '请输入密码', trigger: 'change' },
           { min: 6, max: 12, message: '长度在 6 到 12 个字符', trigger: 'change' }
         ],
         verifycode: [
-          { required: true, message: '请输入验证码', trigger: 'change' },
-          { min: 5, max: 5, message: '长度为5个字符', trigger: 'change' }
+          { validator: verifycode, trigger: 'blur' }
         ]
       },
       imgUrl: 'http://192.168.1.128/qirui/public/index.php/index/login/code'
@@ -49,18 +57,15 @@ export default {
   },
   methods: {
     login () {
-      this.$refs.form.validate(async (valid) => {
-        if (valid) {
-          this.$http.post('/login', {
-            username: this.form.username,
-            password: this.form.password
-          }).then((res) => {
-            console.log(res)
-          })
-        } else {
-          return false
-        }
+      this.$http.post('/login', {
+        username: this.form.username,
+        password: this.form.password
+      }).then((res) => {
+        console.log(res)
       })
+    },
+    verifycode () {
+      // this.$http.post()
     },
     reset () {
       this.$refs.form.resetFields()
