@@ -28,6 +28,21 @@ module.exports = {
       },
       '/uploadFile': {
         target: 'http://192.168.1.128/qirui/public/index.php/index/upload/uploadFile'
+      },
+      '/check_verify': {
+        target: 'http://192.168.1.128/qirui/public/index.php/index/login/check_verify'
+      },
+      '/add': {
+        target: 'http://192.168.1.128/qirui/public/index.php/index/index/add'
+      },
+      '/bannerList': {
+        target: 'http://192.168.1.128/qirui/public/index.php/index/upload/bannerList'
+      },
+      '/bannerdel': {
+        target: 'http://192.168.1.128/qirui/public/index.php/index/upload/del'
+      },
+      '/banner': {
+        target: 'http://192.168.1.128/qirui/public/index.php/index/upload/add'
       }
     },
 

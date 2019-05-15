@@ -16,8 +16,8 @@
         </el-form-item>
         <el-form-item label="门店品类" prop="article_category">
           <el-radio-group v-model="ruleForm.article_category">
-            <el-radio label="Say YES合集"></el-radio>
-            <el-radio label="新闻中心"></el-radio>
+            <el-radio label="1">Say YES合集</el-radio>
+            <el-radio label="2">新闻中心</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="文章链接" prop="article_curl">
@@ -26,14 +26,18 @@
         <el-form-item label="封面图" prop="article_img">
           <el-upload
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            action=""
             :on-preview="handlePreview"
             :on-remove="handleRemove"
+            :on-change="change"
+            :auto-upload='false'
             :file-list="fileList"
+            :limit="1"
             list-type="picture">
             <el-button size="small" type="primary">重新上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+            <!-- <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div> -->
           </el-upload>
+          <el-button size="small" type="primary" @click="confirm">确认上传</el-button>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitForm('ruleForm')">确认发布</el-button>
@@ -49,37 +53,48 @@ export default {
   data () {
     return {
       fileList: [{
-        name: '',
-        url: ''
+        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
       }],
+      imgurl: '',
       ruleForm: {
-        title: '',
-        category: '',
-        link: '',
-        image: ''
+        article_title: '',
+        article_category: '',
+        article_curl: '',
+        article_img: ''
       },
       rules: {
-        title: [
-          { required: true, message: '请输入文章标题', trigger: 'blur' },
-          { min: 0, max: 20, message: '长度在 0 到 20 个字符', trigger: 'blur' }
+        article_title: [
+          { required: true, message: '请输入文章标题', trigger: 'change' }
         ],
-        category: [
+        article_category: [
           { required: true, message: '请选择门店品类', trigger: 'change' }
         ],
-        link: [
-          { required: true, message: '请输入文章链接', trigger: 'blur' }
-        ],
-        image: [
-          { required: true, message: '请上传图片', trigger: 'blur' }
+        article_curl: [
+          { required: true, message: '请输入文章链接', trigger: 'change' }
         ]
       }
+      // radio: this.ruleForm.article_category
     }
   },
   methods: {
-    submitForm (formName) {
-      this.$refs[formName].validate((valid) => {
+    submitForm (ruleForm) {
+      var time = new Date()
+      console.log(time.getTime())
+      this.$refs.ruleForm.validate((valid) => {
         if (valid) {
-          alert('submit!')
+          this.$http.post('/add', {
+            article_title: this.ruleForm.article_title,
+            article_curl: this.ruleForm.article_curl,
+            article_img: this.ruleForm.article_img,
+            article_time: this.ruleForm.article_time,
+            article_category: this.ruleForm.article_category
+          }).then((res) => {
+            console.log(res.data)
+            if (res.data.status === 1) {
+              this.$message.success('文章上传成功')
+              this.$router.push('./home')
+            }
+          })
         } else {
           console.log('error submit!!')
           return false
@@ -94,6 +109,41 @@ export default {
     },
     handlePreview (file) {
       console.log(file)
+    },
+    beforeAvatarUpload () {
+      console.log(1111)
+    },
+    change (file) {
+      console.log(file)
+      function getImageBlob (url, cb) {
+        const xhr = new XMLHttpRequest()
+        xhr.open('get', url, true)
+        xhr.responseType = 'blob'
+        xhr.onload = function () {
+          if (this.status === 200) {
+            if (cb) cb(this.response)
+          }
+        }
+        xhr.send()
+      }
+      if (file.size < 1100000) {
+        let reader = new FileReader()
+        getImageBlob(file.url, function (blob) {
+          reader.readAsDataURL(blob)
+        })
+        reader.onload = e => {
+          this.imgurl = e.target.result
+          console.log(e.target.result) // base64
+          console.log('this.imgurl', this.imgurl)
+        }
+      } else {
+        alert('文件太大')
+      }
+    },
+    confirm () {
+      this.$http.post('/uploadFile', 'file=' + this.imgurl).then((res) => {
+        this.article_img = res.article_img
+      })
     }
   },
   created () {

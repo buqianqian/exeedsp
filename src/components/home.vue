@@ -17,12 +17,20 @@
           <el-button type="primary" @click="searchTitle">搜索</el-button>
         <!-- </el-col> -->
         <!-- <el-col :xs="3"> -->
-          <el-date-picker
+          <!-- <el-date-picker
             v-model="pickDate"
             type="date"
             @change="dateChange"
             placeholder="选择日期"
             value-format="yyyy-MM-dd">
+          </el-date-picker> -->
+          <el-date-picker
+            v-model="pickDate"
+            type="daterange"
+            @change="dateChange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期">
           </el-date-picker>
         <!-- </el-col> -->
         <el-button type="primary" style="float: right" @click="newArticle">新建文章</el-button>
@@ -127,7 +135,6 @@ export default {
       })
     },
     async searchTitle () {
-      console.log('搜索', this.keyWord)
       let data = `keyword=${this.keyWord}&page=1`
       const res = await this.$http.post('/search', data)
       const meta = res.data
@@ -154,9 +161,23 @@ export default {
       // }
     },
     dateChange () {
-      console.log('dateChange', this.pickDate)
-      this.tableData = this.tableData.filter((val) => {
-        return val.date === this.pickDate
+      console.log('dateChange', this.pickDate[0], this.pickDate[1])
+      // this.tableData = this.tableData.filter((val) => {
+      //   return val.date === this.pickDate
+      // })
+      let beginDate = this.formatDate(this.pickDate[0])
+      let endDate = this.formatDate(this.pickDate[1])
+      console.log('time', beginDate, endDate)
+      this.$http.post('/search', {
+        beginDate: beginDate,
+        endDate: endDate,
+        page: 1
+      }).then((res) => {
+        // console.log(res.data)
+        // console.log(this.tableData)
+        this.tableData = res.data.data
+        this.total = res.data.count
+        console.log(this.total)
       })
       this.keyWord = ''
     },
@@ -178,6 +199,15 @@ export default {
       this.total = meta.data.count
       this.tableData = meta.data.data
       console.log(meta.data)
+    },
+    formatTen (num) {
+      return num > 9 ? (num + '') : ('0' + num)
+    },
+    formatDate (date) {
+      var year = date.getFullYear()
+      var month = date.getMonth() + 1
+      var day = date.getDate()
+      return year + '-' + this.formatTen(month) + '-' + this.formatTen(day)
     }
   },
   created () {

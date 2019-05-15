@@ -6,6 +6,8 @@ import Edit from '../components/edit.vue'
 import Login from '../components/login.vue'
 import Banner from '../components/Banner.vue'
 import Main from '../components/Main.vue'
+import EditBanner from '../components/EditBanner.vue'
+import Newbanner from '../components/Newbanner.vue'
 
 Vue.use(Router)
 
@@ -45,20 +47,29 @@ const router = new Router({
           path: '/edit',
           name: Edit,
           component: Edit
+        },
+        {
+          path: '/editBanner',
+          name: EditBanner,
+          component: EditBanner
+        },
+        {
+          path: '/newbanner',
+          name: Newbanner,
+          component: Newbanner
         }
       ]
     }
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  let token = localStorage.getItem('token')
-  if (to.path === '/login' || token) {
-    // 有token，放行
-    next()
-  } else {
-    next('/login')
-  }
-})
+// router.beforeEach((to, from, next) => {
+//   let user = localStorage.getItem('user')
+//   if (to.path === '/login' || user) {
+//     next()
+//   } else {
+//     next('/login')
+//   }
+// })
 
 export default router

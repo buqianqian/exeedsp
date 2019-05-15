@@ -4,26 +4,20 @@
       <el-col>
         <el-breadcrumb separator-class="el-icon-arrow-right" style="padding: 20px;">
           <el-breadcrumb-item :to="{ path: '/' }">瀑布流</el-breadcrumb-item>
-          <el-breadcrumb-item :to="{ path: '/home' }" style="color: #529DFE">文章管理</el-breadcrumb-item>
-          <el-breadcrumb-item style="color: #529DFE">新建文章</el-breadcrumb-item>
+          <el-breadcrumb-item :to="{ path: '/home' }" style="color: #529DFE">轮播图管理</el-breadcrumb-item>
+          <el-breadcrumb-item style="color: #529DFE">{{this.ruleForm.title}}</el-breadcrumb-item>
         </el-breadcrumb>
       </el-col>
     </el-row>
     <div style="padding: 20px; width:500px">
       <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
-        <el-form-item label="文章标题" prop="article_title">
-          <el-input v-model="ruleForm.article_title"></el-input>
+        <el-form-item label="序号" prop="banner_level">
+          <el-input v-model="ruleForm.banner_level"></el-input>
         </el-form-item>
-        <el-form-item label="门店品类" prop="article_category">
-          <el-radio-group v-model="ruleForm.article_category">
-            <el-radio label="1">Say YES合集</el-radio>
-            <el-radio label="2">新闻中心</el-radio>
-          </el-radio-group>
+        <el-form-item label="链接" prop="banner_link">
+          <el-input v-model="ruleForm.banner_link"></el-input>
         </el-form-item>
-        <el-form-item label="文章链接" prop="article_curl">
-          <el-input v-model="ruleForm.article_curl"></el-input>
-        </el-form-item>
-        <el-form-item label="封面图" prop="article_img">
+        <el-form-item label="图片" prop="banner_url">
           <el-upload
             class="upload-demo"
             action=""
@@ -31,9 +25,10 @@
             :on-remove="handleRemove"
             :on-change="change"
             :auto-upload='false'
+            :file-list="fileList"
             :limit="1"
             list-type="picture">
-            <el-button size="small" type="primary">点击上传</el-button>
+            <el-button size="small" type="primary">重新上传</el-button>
             <!-- <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div> -->
           </el-upload>
           <el-button size="small" type="primary" @click="confirm">确认上传</el-button>
@@ -51,66 +46,44 @@
 export default {
   data () {
     return {
+      fileList: [{
+        url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100'
+      }],
       imgurl: '',
       ruleForm: {
-        article_title: '',
-        article_category: '',
-        article_curl: '',
-        article_img: ''
+        banner_id: '',
+        banner_level: '',
+        banner_link: '',
+        banner_url: ''
       },
       rules: {
-        article_title: [
-          { required: true, message: '请输入文章标题', trigger: 'change' }
+        banner_level: [
+          { required: true, message: '请输入图片序号', trigger: 'change' }
         ],
-        article_category: [
-          { required: true, message: '请选择门店品类', trigger: 'change' }
-        ],
-        article_curl: [
-          { required: true, message: '请输入文章链接', trigger: 'change' }
+        banner_link: [
+          { required: true, message: '请选择图片链接', trigger: 'change' }
         ]
       }
     }
   },
   methods: {
-    uploadImg (res, file) {
-      console.log(1)
-      if (res.status === 1) {
-        this.foodForm.image_path = res.image_path
-      } else {
-        this.$message.error('上传图片失败！')
-      }
-    },
-    beforeImgUpload (file) {
-      console.log(2)
-      const isRightType = (file.type === 'image/jpeg') || (file.type === 'image/png')
-      const isLt2M = file.size / 1024 / 1024 < 2
-      if (!isRightType) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
-      }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
-      }
-      return isRightType && isLt2M
-    },
     submitForm (ruleForm) {
-      var time = new Date()
-      console.log(time.getTime())
+      // var time = new Date()
+      // console.log(time.getTime())
       this.$refs.ruleForm.validate((valid) => {
         if (valid) {
           this.$http.post('/add', {
-            article_title: this.ruleForm.article_title,
-            article_curl: this.ruleForm.article_curl,
-            article_img: this.ruleForm.article_img,
-            article_time: this.ruleForm.article_time,
-            article_category: this.ruleForm.article_category
+            banner_id: this.ruleForm.banner_id,
+            banner_level: this.ruleForm.banner_level,
+            banner_link: this.ruleForm.banner_link,
+            banner_url: this.ruleForm.banner_url
           }).then((res) => {
             console.log(res.data)
             if (res.data.status === 1) {
-              this.$message.success('文章上传成功')
-              this.$router.push('./home')
+              this.$message.success('图片上传成功')
+              this.$router.push('./banner')
             }
           })
-          console.log(this.ruleForm)
         } else {
           console.log('error submit!!')
           return false
@@ -118,7 +91,7 @@ export default {
       })
     },
     cancel () {
-      this.$router.push('./home')
+      this.$router.push('./banner')
     },
     handleRemove (file, fileList) {
       console.log(file, fileList)
@@ -161,6 +134,12 @@ export default {
         this.article_img = res.article_img
       })
     }
+  },
+  created () {
+    this.ruleForm = this.$route.query
+    console.log(this.ruleForm)
+    this.fileList[0].name = this.$route.query.article_img
+    this.fileList[0].url = this.$route.query.article_img
   }
 }
 </script>

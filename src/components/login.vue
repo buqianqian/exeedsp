@@ -7,9 +7,9 @@
       <el-form-item label="密码" prop="password">
         <el-input type="password" v-model="form.password" placeholder="请输入密码"></el-input>
       </el-form-item>
-      <el-form-item label="验证码" class="verify">
+      <el-form-item label="验证码" class="verify" style="maigin-top: 20px">
         <div style="width: 200px; height: 100%; position:relative">
-          <img :src="imgUrl" alt="" @click="refresh" style="width: 200px;position: absolute;top:-15px;left:0">
+          <img :src="imgUrl" alt="" @click="refresh" style="width: 200px;height: 30px;position: absolute;top:0px;left:0;">
         </div>
       </el-form-item>
       <el-form-item label="输入验证码" prop="verifycode">
@@ -29,12 +29,19 @@ export default {
       if (value.length !== 5) {
         callback(new Error('验证码错误'))
       } else if (value.length === 5) {
-        this.verifycode()
         callback()
+        // let verifyresult = this.verify()
+        // if (verifyresult.status === 1) {
+        //   callback()
+        // } else {
+        //   callback(new Error('验证码错误'))
+        // }
       }
       // callback()
     }
     return {
+      // user: '',
+      verifycode: '',
       form: {
         username: '',
         password: ''
@@ -56,16 +63,31 @@ export default {
     }
   },
   methods: {
-    login () {
-      this.$http.post('/login', {
-        username: this.form.username,
-        password: this.form.password
-      }).then((res) => {
-        console.log(res)
+    login (form) {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          this.$http.post('/login', {
+            username: this.form.username,
+            password: this.form.password
+          }).then((res) => {
+            console.log(res)
+            if (res.data.status === 1) {
+              localStorage.setItem('user', 111)
+              this.$router.push('./home')
+            }
+          })
+        } else {
+          this.$message.error('用户名或密码错误')
+          return false
+        }
       })
     },
-    verifycode () {
-      // this.$http.post()
+    verify () {
+      this.$http.post('/check_verify', {
+        code: this.form.verifycode
+      }).then((res) => {
+        return res
+      })
     },
     reset () {
       this.$refs.form.resetFields()

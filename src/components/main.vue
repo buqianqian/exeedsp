@@ -1,6 +1,11 @@
 <template>
   <el-container>
-    <el-header>EXEED</el-header>
+    <el-header>
+      <div style="width: 300px; float: left">PUZZLE-IDEA项目管理后台
+      </div>
+      <div style="width: 70px; float: right; cursor: pointer" @click="logout">退出登录
+      </div>
+    </el-header>
     <el-container>
       <el-aside width="200px" height="100%">
         <el-row class="tac">
@@ -23,7 +28,7 @@
                   <el-menu-item index="./home">文章管理</el-menu-item>
                 </el-menu-item-group>
                 <el-menu-item-group>
-                  <el-menu-item index="./banner">banner</el-menu-item>
+                  <el-menu-item index="./banner">轮播图管理</el-menu-item>
                 </el-menu-item-group>
               </el-submenu>
             </el-menu>
@@ -45,6 +50,10 @@ export default {
     },
     handleClose (key, keyPath) {
       console.log(key, keyPath)
+    },
+    logout () {
+      localStorage.removeItem('user')
+      this.$router.push('./login')
     }
   }
 }
