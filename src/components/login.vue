@@ -23,24 +23,36 @@
   </div>
 </template>
 <script>
+import qs from 'qs'
 export default {
   data () {
     var verifycode = (rule, value, callback) => {
       if (value.length !== 5) {
         callback(new Error('验证码错误'))
       } else if (value.length === 5) {
-        callback()
+        // callback()
+        this.verify()
+        if (this.verifyresult.data.status === 2) {
+          console.log(1111)
+          callback()
+        } else {
+          callback(new Error('验证码错误'))
+          console.log('不通过')
+        }
+        //
+        // console.log(this.verify())
         // let verifyresult = this.verify()
+        // console.log(this.verify())
         // if (verifyresult.status === 1) {
         //   callback()
         // } else {
         //   callback(new Error('验证码错误'))
         // }
       }
-      // callback()
     }
     return {
-      // user: '',
+      user: '',
+      verifyresult: '',
       verifycode: '',
       form: {
         username: '',
@@ -48,15 +60,16 @@ export default {
       },
       rules: {
         username: [
-          { message: '请输入用户名', trigger: 'change' },
-          { min: 3, max: 6, message: '长度在 3 到 6 个字符', trigger: 'change' }
+          { required: true, message: '请输入用户名', trigger: 'change' },
+          { min: 5, max: 10, message: '长度在 5 到 10 个字符', trigger: 'change' }
         ],
         password: [
-          { message: '请输入密码', trigger: 'change' },
+          { required: true, message: '请输入密码', trigger: 'change' },
           { min: 6, max: 12, message: '长度在 6 到 12 个字符', trigger: 'change' }
         ],
         verifycode: [
-          { validator: verifycode, trigger: 'blur' }
+          { validator: verifycode, required: true, trigger: 'blur' }
+          // { min: 5, max: 5, message: '长度5个字符', trigger: 'change' }
         ]
       },
       imgUrl: 'http://192.168.1.128/qirui/public/index.php/index/login/code'
@@ -64,29 +77,40 @@ export default {
   },
   methods: {
     login (form) {
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          this.$http.post('/login', {
-            username: this.form.username,
-            password: this.form.password
-          }).then((res) => {
-            console.log(res)
-            if (res.data.status === 1) {
-              localStorage.setItem('user', 111)
-              this.$router.push('./home')
-            }
-          })
-        } else {
-          this.$message.error('用户名或密码错误')
-          return false
-        }
-      })
+      if (this.verifyresult.data.status === 2) {
+        console.log('验证通过login')
+        this.$refs.form.validate((valid) => {
+          if (valid) {
+            let data = qs.stringify({
+              username: this.form.username,
+              password: this.form.password
+            })
+            this.$http.post('/login', data).then((res) => {
+              this.user = res.data.name
+              if (res.data.status === 1) {
+                localStorage.setItem('user', this.user)
+                this.$router.push('./home')
+                this.$message.success('登录成功')
+              } else {
+                this.$message.error('登录失败')
+              }
+            })
+          } else {
+            this.$message.error('登录失败')
+            return false
+          }
+        })
+      }
     },
     verify () {
-      this.$http.post('/check_verify', {
-        code: this.form.verifycode
-      }).then((res) => {
-        return res
+      this.$http.post('/check_verify', `code=${this.form.verifycode}`).then((res) => {
+        // return res
+        // console.log(res)
+        this.verifyresult = res
+        // console.log(this.verifyresult)
+        // if (this.verifyresult.data.status === 2) {
+        //   console.log('通过')
+        // }
       })
     },
     reset () {

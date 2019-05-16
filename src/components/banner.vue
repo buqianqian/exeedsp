@@ -163,9 +163,11 @@ export default {
           console.warn(res)
           if (res.data.status === 1) {
             console.log('删除成功')
+            this.$message.success('删除成功')
             this.getBanner()
+            return false
           } else if (res.data.status === 2) {
-            console.log('操作失败')
+            console.log('删除失败')
           }
         })
     },

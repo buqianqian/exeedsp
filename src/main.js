@@ -6,6 +6,7 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import App from './App'
 import router from './router'
+import qs from 'qs'
 
 Vue.prototype.$http = axios
 axios.defaults.headers = {
@@ -14,6 +15,7 @@ axios.defaults.headers = {
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
+Vue.use(qs)
 
 /* eslint-disable no-new */
 new Vue({

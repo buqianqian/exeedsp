@@ -49,6 +49,7 @@
 </template>
 
 <script>
+import qs from 'qs'
 export default {
   data () {
     return {
@@ -60,7 +61,8 @@ export default {
         article_title: '',
         article_category: '',
         article_curl: '',
-        article_img: ''
+        article_img: '',
+        article_id: ''
       },
       rules: {
         article_title: [
@@ -81,20 +83,27 @@ export default {
       var time = new Date()
       console.log(time.getTime())
       this.$refs.ruleForm.validate((valid) => {
+        let data = qs.stringify({
+          article_title: this.ruleForm.article_title,
+          article_curl: this.ruleForm.article_curl,
+          article_img: this.ruleForm.article_img,
+          article_category: this.ruleForm.article_category
+        })
         if (valid) {
-          this.$http.post('/add', {
-            article_title: this.ruleForm.article_title,
-            article_curl: this.ruleForm.article_curl,
-            article_img: this.ruleForm.article_img,
-            article_time: this.ruleForm.article_time,
-            article_category: this.ruleForm.article_category
-          }).then((res) => {
+          this.$http.post('/add', data).then((res) => {
             console.log(res.data)
             if (res.data.status === 1) {
               this.$message.success('文章上传成功')
               this.$router.push('./home')
+              this.$http.post('/del', `id=${this.ruleForm.article_id}`).then((res) => {
+                console.log(res)
+              })
+              return false
+            } else {
+              this.$message.error('文章上传失败')
             }
           })
+          console.log(this.ruleForm)
         } else {
           console.log('error submit!!')
           return false
@@ -141,14 +150,34 @@ export default {
       }
     },
     confirm () {
-      this.$http.post('/uploadFile', 'file=' + this.imgurl).then((res) => {
-        this.article_img = res.article_img
+      let data = qs.stringify({
+        file: this.imgurl,
+        type: 'article'
+      })
+      this.$http.post('/uploadFile', data).then((res) => {
+        if (res.data.status === 1) {
+          this.$message.success('图片上传成功')
+          this.ruleForm.article_img = res.data.path
+          return false
+        } else {
+          this.$message.error('图片上传失败')
+        }
       })
     }
   },
   created () {
     this.ruleForm = this.$route.query
-    console.log(this.$route.query)
+    // let category = this.$route.quuery.article_category
+    // console.log(category)
+    let category = this.$route.query.article_category
+    console.log(category)
+    // console.log(this.$route.query)
+    if (category === 'Say YES合集') {
+      category = 1
+    } else {
+      category = 2
+    }
+    this.$set(this.ruleForm, 'article_category', `${category}`)
     this.fileList[0].name = this.$route.query.article_img
     this.fileList[0].url = this.$route.query.article_img
   }

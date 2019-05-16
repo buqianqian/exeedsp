@@ -48,6 +48,7 @@
 </template>
 
 <script>
+import qs from 'qs'
 export default {
   data () {
     return {
@@ -93,21 +94,23 @@ export default {
       return isRightType && isLt2M
     },
     submitForm (ruleForm) {
-      var time = new Date()
-      console.log(time.getTime())
+      // var time = new Date()
+      // console.log(time.getTime())
       this.$refs.ruleForm.validate((valid) => {
+        let data = qs.stringify({
+          article_title: this.ruleForm.article_title,
+          article_curl: this.ruleForm.article_curl,
+          article_img: this.ruleForm.article_img,
+          article_category: this.ruleForm.article_category
+        })
         if (valid) {
-          this.$http.post('/add', {
-            article_title: this.ruleForm.article_title,
-            article_curl: this.ruleForm.article_curl,
-            article_img: this.ruleForm.article_img,
-            article_time: this.ruleForm.article_time,
-            article_category: this.ruleForm.article_category
-          }).then((res) => {
+          this.$http.post('/add', data).then((res) => {
             console.log(res.data)
             if (res.data.status === 1) {
               this.$message.success('文章上传成功')
               this.$router.push('./home')
+            } else {
+              this.$message.error('文章上传失败')
             }
           })
           console.log(this.ruleForm)
@@ -157,8 +160,20 @@ export default {
       }
     },
     confirm () {
-      this.$http.post('/uploadFile', 'file=' + this.imgurl).then((res) => {
-        this.article_img = res.article_img
+      let data = qs.stringify({
+        file: this.imgurl,
+        type: 'article'
+      })
+      this.$http.post('/uploadFile', data).then((res) => {
+        console.log(res)
+        if (res.data.status === 1) {
+          this.$message.success('图片上传成功')
+          this.ruleForm.article_img = res.data.path
+          return false
+        } else {
+          this.$message.error('图片上传失败')
+        }
+        // console.log(this.article_img)
       })
     }
   }

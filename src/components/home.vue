@@ -11,7 +11,7 @@
     <!-- <el-row> -->
       <div>
         <!-- <el-col :xs="2"> -->
-          <el-input v-model="keyWord" placeholder="标题" style="width: 200px"></el-input>
+          <el-input v-model="keyWord" placeholder="输入文章标题关键字" style="width: 200px"></el-input>
         <!-- </el-col> -->
         <!-- <el-col :xs="2"> -->
           <el-button type="primary" @click="searchTitle">搜索</el-button>
@@ -103,6 +103,7 @@
 </template>
 
 <script>
+import qs from 'qs'
 export default {
   data () {
     return {
@@ -122,13 +123,15 @@ export default {
       this.$router.push({path: '/edit', query: row})
     },
     handleDelete (index, row) {
-      this.$http.post('/del', {
+      let data = qs.stringify({
         id: row.article_id
-      }).then((res) => {
+      })
+      this.$http.post('/del', data).then((res) => {
         console.log(res)
         if (res.data.status === 1) {
           console.log('删除成功')
           this.getList()
+          return false
         } else if (res.data.status === 2) {
           console.log('操作失败')
         }
@@ -141,7 +144,7 @@ export default {
       console.log(meta)
       if (meta.status === 1) {
         this.tableData = meta.data
-        this.total = meta.data.length
+        this.total = meta.count
         console.log(this.tableData)
       }
       // if (meta.status ===)
@@ -168,14 +171,16 @@ export default {
       let beginDate = this.formatDate(this.pickDate[0])
       let endDate = this.formatDate(this.pickDate[1])
       console.log('time', beginDate, endDate)
-      this.$http.post('/search', {
+      let data = qs.stringify({
         beginDate: beginDate,
         endDate: endDate,
         page: 1
-      }).then((res) => {
+      })
+      this.$http.post('/search', data).then((res) => {
         // console.log(res.data)
         // console.log(this.tableData)
         this.tableData = res.data.data
+        this.format()
         this.total = res.data.count
         console.log(this.total)
       })
@@ -185,12 +190,18 @@ export default {
       console.log(`每页 ${val} 条`)
     },
     async handleCurrentChange (val) {
-      const res = await this.$http.post('/search', {
-        page: val
+      let keyWord = this.keyWord
+      console.log(val, keyWord)
+      // let data = `page=${val}`
+      let data = qs.stringify({
+        page: val,
+        keyword: keyWord
       })
+      const res = await this.$http.post('/search', data)
       const meta = res
       this.total = meta.data.count
       this.tableData = meta.data.data
+      this.format()
       console.log(meta.data)
     },
     async getList () {
@@ -198,7 +209,9 @@ export default {
       const meta = res
       this.total = meta.data.count
       this.tableData = meta.data.data
-      console.log(meta.data)
+      console.log(this.tableData)
+      this.format()
+      // console.log(meta.data)
     },
     formatTen (num) {
       return num > 9 ? (num + '') : ('0' + num)
@@ -208,6 +221,18 @@ export default {
       var month = date.getMonth() + 1
       var day = date.getDate()
       return year + '-' + this.formatTen(month) + '-' + this.formatTen(day)
+    },
+    format () {
+      this.tableData.forEach((item) => {
+        console.log(item.article_category)
+        let time = new Date(item.article_time * 1000)
+        item.article_time = this.formatDate(time)
+        if (item.article_category === 1) {
+          item.article_category = 'Say YES合集'
+        } else {
+          item.article_category = '新闻中心'
+        }
+      })
     }
   },
   created () {

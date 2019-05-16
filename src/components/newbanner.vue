@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import qs from 'qs'
 export default {
   data () {
     return {
@@ -67,21 +68,23 @@ export default {
       // var time = new Date()
       // console.log(time.getTime())
       this.$refs.ruleForm.validate((valid) => {
+        let data = qs.stringify({
+          id: this.ruleForm.banner_id,
+          num: this.ruleForm.banner_level,
+          link: this.ruleForm.banner_link,
+          path: this.ruleForm.banner_url
+        })
         if (valid) {
-          this.$http.post('/banner', {
-            id: this.ruleForm.banner_id,
-            num: this.ruleForm.banner_level,
-            link: this.ruleForm.banner_link,
-            path: this.ruleForm.banner_url
-          }).then((res) => {
+          this.$http.post('/banner', data).then((res) => {
             console.log(res.data)
             if (res.data.status === 1) {
-              this.$message.success('图片上传成功')
+              this.$message.success('上传成功')
               this.$router.push('./banner')
+              return false
             }
           })
         } else {
-          console.log('error submit!!')
+          this.$message.error('上传失败')
           return false
         }
       })
@@ -126,8 +129,12 @@ export default {
       }
     },
     confirm () {
-      this.$http.post('/uploadFile', 'file=' + this.imgurl).then((res) => {
-        this.article_img = res.article_img
+      let data = qs.stringify({
+        file: this.imgurl,
+        type: 'banner'
+      })
+      this.$http.post('/uploadFile', data).then((res) => {
+        this.ruleForm.banner_url = res.data.path
       })
     }
   },
